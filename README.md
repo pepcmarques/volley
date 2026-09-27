@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Volleyball Rotation Planner
 
-## Getting Started
+The planner lives at `/` and keeps official rotation order separate from tactical court movement.
 
-First, run the development server:
+## Architecture
+
+- `domain/volleyball/types.ts` defines players, rotations, court positions, systems, libero configuration, and validation results.
+- `domain/volleyball/rotations.ts` derives all six rotations immutably from the starting lineup using `1 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1`.
+- `domain/volleyball/systems.ts` selects active setters for `5-1`, `6-2`, and `4-2` modes and models setter setting position `2` or `3`.
+- `domain/volleyball/positioning.ts` derives tactical assignments and provides immutable tactical swaps.
+- `domain/volleyball/libero.ts` applies a libero as a derived back-row overlay without replacing the official rotation.
+- `domain/volleyball/validation.ts` validates lineup, rotation, system, and tactical state.
+- `app/page.tsx` is the React application layer. It owns selection, view mode, and undo/redo history; it does not calculate volleyball rules.
+
+## Rules and assumptions
+
+The six-player rotation is the official pre-serve order. Tactical positions are a separate post-serve layer. A libero is never part of the six-player starting rotation and is shown as a derived replacement for a back-row player. The `4-2` configuration uses the front-row setter behavior; the back-row setter/infiltration behavior belongs to `6-2`. The demo lineup supplies two setters for both systems.
+
+## Development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev -- --port 3333
+npm test
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3333](http://localhost:3333) while the development server is running.
