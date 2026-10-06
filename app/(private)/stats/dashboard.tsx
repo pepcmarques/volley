@@ -127,6 +127,7 @@ export default function StatsDashboard({ initialRows }: { initialRows: StatRow[]
     setRows(initialRows);
     setPlayerFilter("all");
     setGameFilter("all");
+    setAggregationMode("game");
     setPlayerAggregationMode("all");
   }
 
@@ -163,7 +164,13 @@ export default function StatsDashboard({ initialRows }: { initialRows: StatRow[]
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-slate-600">Game</label>
-            <Select value={gameFilter} onValueChange={setGameFilter}>
+            <Select
+              value={gameFilter}
+              onValueChange={(value) => {
+                setGameFilter(value);
+                setAggregationMode(value === "all" ? "game" : "set");
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
