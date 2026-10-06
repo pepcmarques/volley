@@ -179,7 +179,7 @@ export default function VolleyballPlannerPage() {
   };
 
   return (
-    <main className="planner-page">
+    <div className="planner-page">
       <header className="planner-header"></header>
 
       <section className="planner-shell">
@@ -356,6 +356,6 @@ export default function VolleyballPlannerPage() {
             })}
         </aside>
       </section>
-    </main>
+    </div>
   );
 }
