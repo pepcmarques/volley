@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -27,7 +28,7 @@ function isLoginResponse(body: unknown): body is LoginResponse {
 
 function clearSessionCookies(cookieStore: Awaited<ReturnType<typeof cookies>>) {
   for (const path of ["/", "/stats"]) {
-    cookieStore.delete({ name: sessionCookie, path });
+    cookieStore.delete(sessionCookie);
     cookieStore.set({
       name: sessionCookie,
       value: "",
@@ -39,7 +40,15 @@ function clearSessionCookies(cookieStore: Awaited<ReturnType<typeof cookies>>) {
 }
 
 export async function isStatsAuthenticated() {
-  return Boolean((await cookies()).get(sessionCookie)?.value);
+  const token = (await cookies()).get(sessionCookie)?.value;
+  if (!token) return false;
+
+  const response = await fetch(`${backendUrl}/stats`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  }).catch(() => null);
+
+  return response?.ok ?? false;
 }
 
 export async function getStatsSessionToken() {
@@ -47,7 +56,10 @@ export async function getStatsSessionToken() {
 }
 
 export async function authenticateStats(formData: FormData) {
-  const role = String(formData.get("role") ?? "");
+  const selectedRoles = formData
+    .getAll("role")
+    .filter((value): value is string => typeof value === "string");
+  const role = selectedRoles.length === 1 ? selectedRoles[0] : "";
   const suppliedPassword = String(formData.get("password") ?? "");
 
   if (!["staff", "player"].includes(role) || !suppliedPassword) {
@@ -114,5 +126,6 @@ export async function logoutStats() {
   }
 
   clearSessionCookies(cookieStore);
+  revalidatePath("/", "layout");
   redirect("/");
 }

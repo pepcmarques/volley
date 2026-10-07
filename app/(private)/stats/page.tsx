@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import { authenticateStats, getStatsSessionToken } from "./actions";
 import StatsDashboard, { type StatRow } from "./dashboard";
 
-const backendUrl = process.env.BACKEND_URL;
+const backendUrl = process.env.BACKEND_URL ?? "http://localhost:4444";
+
+export const dynamic = "force-dynamic";
 
 function getString(row: Record<string, unknown>, ...keys: string[]) {
   for (const key of keys) {
@@ -59,18 +61,35 @@ function normalizeRows(body: unknown): StatRow[] | null {
 }
 
 async function readStatsRows(token: string): Promise<StatRow[] | null> {
+  let response: Response;
+
   try {
-    const response = await fetch(`${backendUrl}/stats`, {
+    response = await fetch(`${backendUrl}/stats`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
 
-    if (response.status === 401) {
-      redirect("/stats?error=session-expired");
-    }
-    if (!response.ok) return null;
-    return normalizeRows(await response.json());
   } catch {
+    return null;
+  }
+
+  if (response.status === 401) {
+    redirect("/stats?error=session-expired");
+  }
+  if (!response.ok) return null;
+
+  try {
+    return normalizeRows(await response.json());
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "digest" in error &&
+      typeof error.digest === "string" &&
+      error.digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw error;
+    }
     return null;
   }
 }
@@ -116,19 +135,29 @@ export default async function StatsPage({ searchParams }: PageProps<"/stats">) {
               You were signed out of this browser, but the login service could not confirm the logout.
             </p>
           )}
-          <label className="mt-5 block text-sm font-medium text-slate-700" htmlFor="role">
-            Role
-          </label>
-          <select
-            className="mt-1.5 w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-            defaultValue="staff"
-            id="role"
-            name="role"
-            required
-          >
-            <option value="staff">Staff</option>
-            <option value="player">Player</option>
-          </select>
+          <fieldset className="mt-5">
+            <legend className="block text-sm font-medium text-slate-700">Access type</legend>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              {[
+                { id: "staff", label: "Staff" },
+                { id: "player", label: "Player" },
+              ].map((option) => (
+                <label
+                  className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 transition has-checked:border-blue-600 has-checked:bg-blue-50 has-checked:text-blue-700"
+                  key={option.id}
+                >
+                  <input
+                    className="h-4 w-4 accent-blue-600"
+                    name="role"
+                    type="radio"
+                    value={option.id}
+                    required
+                  />
+                  {option.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <label className="mt-5 block text-sm font-medium text-slate-700" htmlFor="password">
             Password
           </label>
