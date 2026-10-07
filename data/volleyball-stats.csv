@@ -1,0 +1,37 @@
+player,player_number,game_number,versus,set,ace,in,miss
+Zoe,5,1,Argyle Gold,1,0,4,0
+Cecilia,22,1,Argyle Gold,1,4,6,1
+Nayri,14,1,Argyle Gold,1,0,1,0
+Pamela,1,1,Argyle Gold,1,0,1,1
+Molly,3,1,Argyle Gold,1,0,1,0
+Abbey,10,1,Argyle Gold,1,0,1,1 
+Emily S.,7,1,Argyle Gold,2,0,2,1
+Jasmine,12,1,Argyle Gold,2,0,2,2
+Ava,16,1,Argyle Gold,2,0,3,1
+Emily O.,6,1,Argyle Gold,2,1,3,2
+Ashana,8,1,Argyle Gold,2,0,3,1
+Cecilia,22,1,Argyle Gold,2,1,3,0
+Nayri,14,2,Carson White,1,1,4,0
+Ashana,8,2,Carson White,1,1,4,0
+Abbey,10,2,Carson White,1,1,4,0
+Cecilia,22,2,Carson White,1,1,3,1
+Zoe,5,2,Carson White,1,3,5,0
+Emily S.,7,2,Carson White,1,0,6,1
+Emily O.,6,2,Carson White,2,1,3,0
+Abbey,10,2,Carson White,2,1,3,0
+Molly,3,2,Carson White,2,1,2,1
+Pamela,1,2,Carson White,2,1,2,1
+Ava,16,2,Carson White,2,0,1,0
+Jasmine,12,2,Carson White,2,0,2,1
+Emily O.,6,3,Notre Dame,1,1,2,1
+Nayri,14,3,Notre Dame,1,0,2,0
+Molly,3,3,Notre Dame,1,0,1,1
+Pamela,1,3,Notre Dame,1,3,6,0
+Ava,16,3,Notre Dame,1,1,2,1
+Jasmine,12,3,Notre Dame,1,0,1,0
+Nayri,14,3,Notre Dame,2,0,1,0
+Ashana,8,3,Notre Dame,2,0,2,0
+Zoe,5,3,Notre Dame,2,0,2,0
+Cecilia,22,3,Notre Dame,2,0,6,1
+Pamela,1,3,Notre Dame,2,0,3,1
+Jasmine,12,3,Notre Dame,2,0,4,0
