@@ -1,361 +1,155 @@
-"use client";
+import Link from "next/link";
+import { ArrowRight, BarChart3, CheckCircle2, ShieldCheck, TrendingUp, Users } from "lucide-react";
 
-import { useState } from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  calculateRotation,
-  calculateTacticalAssignments,
-  demoPlayers,
-  demoStartingRotation,
-  getRotationPosition,
-  swapTacticalPositions,
-  type CourtPosition,
-  type OffensiveSystem,
-  type Player,
-  type PlayerRole,
-  type Rotation,
-  type SetterSettingPosition,
-  type TacticalAssignment,
-  type TacticalAssignments,
-  type TacticalPosition,
-  type TeamConfiguration,
-} from "@/domain/volleyball";
+const featureCards = [
+  {
+    icon: Users,
+    title: "Player-focused planning",
+    description: "Build rotations around your roster and keep every player in the right phase of the game.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Live match insight",
+    description: "Track momentum, identify patterns, and compare key moments without losing context.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Clear decision support",
+    description: "Translate complex movement into simple, actionable coaching cues before the next set.",
+  },
+];
 
-type ViewMode = "rotation" | "tactical";
+const stats = [
+  { value: "12", label: "systems mapped" },
+  { value: "4", label: "rotation phases" },
+  { value: "100%", label: "team visibility" },
+];
 
-const courtSpots: Record<TacticalPosition, { left: number; top: number }> = {
-  leftFront: { left: 25, top: 28 },
-  middleFront: { left: 50, top: 16 },
-  rightFront: { left: 75, top: 28 },
-  leftBack: { left: 25, top: 72 },
-  middleBack: { left: 50, top: 60 },
-  rightBack: { left: 75, top: 72 },
-  setterBase: { left: 62.5, top: 8 },
-};
-
-const courtLabels: Record<TacticalPosition, string> = {
-  rightBack: "1 / Right Back",
-  rightFront: "2 / Right Front",
-  middleFront: "3 / Middle Front",
-  leftFront: "4 / Left Front",
-  leftBack: "5 / Left Back",
-  middleBack: "6 / Middle Back",
-  setterBase: "2.5 / Setter base",
-};
-
-const positionForCourtSpot: Record<CourtPosition, 1 | 2 | 3 | 4 | 5 | 6> = {
-  rightBack: 1,
-  rightFront: 2,
-  middleFront: 3,
-  leftFront: 4,
-  leftBack: 5,
-  middleBack: 6,
-};
-
-const roleNames: Record<Player["roles"][number] | "center", string> = {
-  setter: "Setter",
-  outsideHitter: "Outside hitter",
-  oppositeHitter: "Opposite hitter",
-  middleBlocker: "Middle blocker",
-  libero: "Libero",
-  defensiveSpecialist: "Defensive specialist",
-  utility: "Utility",
-  center: "Center",
-};
-
-const editableRoles: PlayerRole[] = ["setter", "outsideHitter", "oppositeHitter", "middleBlocker"];
-
-const baseConfiguration: TeamConfiguration = {
-  offensiveSystem: "4-2",
-  setterSettingPosition: 3,
-  libero: { enabled: false },
-};
-
-function courtPositionForRotationPosition(rotationPosition: 1 | 2 | 3 | 4 | 5 | 6): CourtPosition {
-  return (Object.entries(positionForCourtSpot).find(([, position]) => position === rotationPosition)?.[0] ??
-    "rightBack") as CourtPosition;
-}
-
-function swapRotationPlayers(rotation: Rotation, draggedPlayerId: string, targetPlayerId: string): Rotation {
-  const nextRotation = { ...rotation };
-  const draggedPosition = Object.entries(rotation).find(([, playerId]) => playerId === draggedPlayerId)?.[0];
-  const targetPosition = Object.entries(rotation).find(([, playerId]) => playerId === targetPlayerId)?.[0];
-
-  if (draggedPosition && targetPosition) {
-    nextRotation[Number(draggedPosition) as keyof Rotation] = targetPlayerId;
-    nextRotation[Number(targetPosition) as keyof Rotation] = draggedPlayerId;
-  } else if (draggedPosition && !targetPosition) {
-    nextRotation[Number(draggedPosition) as keyof Rotation] = targetPlayerId;
-  } else if (!draggedPosition && targetPosition) {
-    nextRotation[Number(targetPosition) as keyof Rotation] = draggedPlayerId;
-  }
-
-  return nextRotation;
-}
-
-export default function VolleyballPlannerPage() {
-  const [players, setPlayers] = useState<Player[]>(demoPlayers);
-  const [startingRotation, setStartingRotation] = useState<Rotation>(demoStartingRotation);
-  const [rotationNumber, setRotationNumber] = useState(0);
-  const [configuration, setConfiguration] = useState<TeamConfiguration>(baseConfiguration);
-  const [viewMode, setViewMode] = useState<ViewMode>("rotation");
-  const [tacticalAssignments, setTacticalAssignments] = useState<TacticalAssignments>(() =>
-    calculateTacticalAssignments({
-      players,
-      rotation: demoStartingRotation,
-      configuration: baseConfiguration,
-    }),
-  );
-  const [selectedPosition, setSelectedPosition] = useState<TacticalPosition | null>(null);
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  const [draggedPlayerId, setDraggedPlayerId] = useState<string | null>(null);
-
-  const rotation = calculateRotation(startingRotation, rotationNumber);
-  const rotationPlayerIds = new Set(Object.values(rotation));
-
-  const handlePlayerDrop = (targetPlayerId: string) => {
-    if (!draggedPlayerId || draggedPlayerId === targetPlayerId) return;
-
-    const nextRotation = swapRotationPlayers(rotation, draggedPlayerId, targetPlayerId);
-    const nextStartingRotation = calculateRotation(nextRotation, 6 - rotationNumber);
-    setTacticalAssignments(calculateTacticalAssignments({ players, rotation: nextRotation, configuration }));
-    setStartingRotation(nextStartingRotation);
-    setDraggedPlayerId(null);
-    setSelectedPosition(null);
-  };
-
-  const changeConfiguration = (next: TeamConfiguration) => {
-    const setterSettingPosition: SetterSettingPosition =
-      next.offensiveSystem === "4-2" ? (next.setterSettingPosition === 2.5 ? 3 : next.setterSettingPosition) : 2.5;
-    const normalizedConfiguration = { ...next, setterSettingPosition };
-    setConfiguration(normalizedConfiguration);
-    setTacticalAssignments(calculateTacticalAssignments({ players, rotation, configuration: normalizedConfiguration }));
-  };
-
-  const changeRotation = (next: number) => {
-    const normalized = (next + 6) % 6;
-    const nextRotation = calculateRotation(startingRotation, normalized);
-    setRotationNumber(normalized);
-    setTacticalAssignments(calculateTacticalAssignments({ players, rotation: nextRotation, configuration }));
-    setSelectedPosition(null);
-    setSelectedPlayerId(null);
-  };
-
-  const swapPosition = (position: TacticalPosition) => {
-    if (!selectedPosition) {
-      setSelectedPosition(position);
-      return;
-    }
-    if (selectedPosition === position) {
-      setSelectedPosition(null);
-      return;
-    }
-    setTacticalAssignments((current) => swapTacticalPositions(current, selectedPosition, position));
-    setSelectedPosition(null);
-  };
-
-  const playersOnCourt = players.flatMap((player) => {
-    if (viewMode === "rotation") {
-      const rotationEntry = Object.entries(rotation).find(([, playerId]) => playerId === player.id);
-      if (!rotationEntry) return [];
-      return [
-        {
-          player,
-          courtPosition: courtPositionForRotationPosition(Number(rotationEntry[0]) as 1 | 2 | 3 | 4 | 5 | 6),
-        },
-      ];
-    }
-
-    const tacticalEntry = (Object.entries(tacticalAssignments) as [TacticalPosition, TacticalAssignment][]).find(
-      ([, assignment]) => assignment.playerId === player.id,
-    );
-    return tacticalEntry ? [{ player, courtPosition: tacticalEntry[0] }] : [];
-  });
-
-  const updatePlayer = (playerId: string, changes: Partial<Player>) => {
-    const nextPlayers = players.map((player) => (player.id === playerId ? { ...player, ...changes } : player));
-    setPlayers(nextPlayers);
-    setTacticalAssignments(calculateTacticalAssignments({ players: nextPlayers, rotation, configuration }));
-  };
-
+export default function LandingPage() {
   return (
-    <div className="planner-page">
-      <header className="planner-header"></header>
+    <main className="bg-[#f4f1e9] text-[#18302b]">
+      <section className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-5 py-12 sm:px-8 lg:px-10 lg:py-16">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+          <div>
+            <p className="mb-5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#648078]">
+              Volleyball coaching system
+            </p>
+            <h1 className="max-w-xl text-5xl font-medium leading-[0.94] tracking-[-0.06em] text-[#18302b] sm:text-6xl lg:text-7xl">
+              Make every rotation count.
+            </h1>
+            <p className="mt-6 max-w-lg text-lg leading-8 text-[#456158]">
+              Prepare smarter match plans, understand your lineup in motion, and turn player data into confident
+              decisions on the court.
+            </p>
 
-      <section className="planner-shell">
-        <aside className="planner-panel">
-          <p className="field-label">Offensive system</p>
-          <div className="segmented-control">
-            {(["5-1", "6-2", "4-2"] as OffensiveSystem[]).map((system) => (
-              <button
-                key={system}
-                className={configuration.offensiveSystem === system ? "active" : ""}
-                onClick={() => changeConfiguration({ ...configuration, offensiveSystem: system })}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Link
+                href="/rotation"
+                className="inline-flex items-center gap-2 rounded-full bg-[#18302b] px-5 py-3 text-sm font-semibold text-[#f9f7f2] transition hover:bg-[#23433b]"
               >
-                {system}
-              </button>
-            ))}
-          </div>
-          <p className="field-label panel-space">Setter sets from</p>
-          <div className="segmented-control">
-            <button
-              className={configuration.setterSettingPosition === 2 ? "active" : ""}
-              disabled={configuration.offensiveSystem !== "4-2"}
-              onClick={() => changeConfiguration({ ...configuration, setterSettingPosition: 2 })}
-            >
-              Position 2
-            </button>
-            <button
-              className={configuration.setterSettingPosition === 3 ? "active" : ""}
-              disabled={configuration.offensiveSystem !== "4-2"}
-              onClick={() => changeConfiguration({ ...configuration, setterSettingPosition: 3 })}
-            >
-              Position 3
-            </button>
-            <button
-              className={configuration.setterSettingPosition === 2.5 ? "active" : ""}
-              disabled={configuration.offensiveSystem === "4-2"}
-              onClick={() => changeConfiguration({ ...configuration, setterSettingPosition: 2.5 })}
-            >
-              Position 2.5
-            </button>
-          </div>
-        </aside>
-
-        <section className="court-panel planner-court-panel">
-          <div className="panel-topline">
-            <div>
-              <span className="section-kicker">
-                {viewMode === "rotation" ? "OFFICIAL ROTATION" : "TACTICAL POSITION"}
-              </span>
-              <h2>{viewMode === "rotation" ? "Who must be where before serve" : "Where players move after serve"}</h2>
-            </div>
-            <div className="view-switch">
-              <button className={viewMode === "rotation" ? "active" : ""} onClick={() => setViewMode("rotation")}>
-                Rotation
-              </button>
-              <button className={viewMode === "tactical" ? "active" : ""} onClick={() => setViewMode("tactical")}>
-                Tactical
-              </button>
-            </div>
-          </div>
-          <div className="court-wrap">
-            <div className="court planner-court" aria-label={`${viewMode} volleyball court`}>
-              <div className="net">
-                <span>NET</span>
-              </div>
-              <div className="attack-line left" />
-              {playersOnCourt.map(({ player, courtPosition }) => {
-                const spot = courtSpots[courtPosition];
-                const isSelected = selectedPosition === courtPosition || selectedPlayerId === player.id;
-                return (
-                  <button
-                    key={player.id}
-                    className={`player-token ${isSelected ? "selected" : ""}`}
-                    onClick={() => {
-                      swapPosition(courtPosition);
-                      setSelectedPlayerId(player.id);
-                    }}
-                    style={{
-                      left: `${spot.left}%`,
-                      top: `${spot.top}%`,
-                      backgroundColor: player.color,
-                      willChange: "left, top",
-                      transition:
-                        "left 900ms cubic-bezier(0.22, 0.8, 0.25, 1), top 900ms cubic-bezier(0.22, 0.8, 0.25, 1), transform 250ms, box-shadow 250ms",
-                    }}
-                    title={courtLabels[courtPosition]}
-                  >
-                    <strong>{player.name}</strong>
-                    <small>#{player.number}</small>
-                  </button>
-                );
-              })}
-              <div className="court-label front">FRONT ROW</div>
-              <div className="court-label back">BACK ROW</div>
-            </div>
-          </div>
-          <div className="court-help">
-            {viewMode === "tactical"
-              ? "Select one player, then another, to swap tactical positions. The rotation layer stays unchanged."
-              : "Official rotation positions are derived from the starting lineup. Switch to Tactical to plan movement after the serve."}
-          </div>
-          <div className="phase-nav planner-phases">
-            {[0, 1, 2, 3, 4, 5].map((step) => (
-              <button
-                key={step}
-                className={rotationNumber === step ? "active" : ""}
-                onClick={() => changeRotation(step)}
+                Open rotation planner
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/stats"
+                className="inline-flex items-center gap-2 rounded-full border border-[#cbd5c8] bg-[#fbfaf5] px-5 py-3 text-sm font-semibold text-[#18302b] transition hover:bg-[#e8eee4]"
               >
-                Rotation {step + 1}
-              </button>
-            ))}
-          </div>
-        </section>
+                Review team stats
+              </Link>
+            </div>
 
-        <aside className="planner-panel roster-panel">
-          <div className="setup-heading">
-            <p className="field-label">Team setup</p>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="info-button" type="button" aria-label="Team setup information">
-                    i
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <div className="tooltip-content">
-                    <p>Edit a player&apos;s name or primary role.</p>
-                    <p>The rotation order stays attached to the player.</p>
+            <div className="mt-10 grid max-w-xl gap-4 sm:grid-cols-3">
+              {stats.map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-[#d6ddd1] bg-[#fbfaf5] p-4">
+                  <div className="text-2xl font-semibold text-[#18302b]">{stat.value}</div>
+                  <div className="mt-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#648078]">
+                    {stat.label}
                   </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          {players
-            .filter((player) => rotationPlayerIds.has(player.id))
-            .map((player) => {
-              const rotationPosition = getRotationPosition(rotation, player.id);
-              const role = editableRoles.includes(player.roles[0]) ? player.roles[0] : "middleBlocker";
-              return (
-                <div
-                  key={player.id}
-                  className={`roster-player roster-editor ${draggedPlayerId === player.id ? "dragging" : ""}`}
-                  draggable
-                  onDragStart={() => {
-                    setDraggedPlayerId(player.id);
-                    setSelectedPlayerId(player.id);
-                  }}
-                  onDragEnd={() => setDraggedPlayerId(null)}
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={() => handlePlayerDrop(player.id)}
-                  onClick={() => setSelectedPlayerId(player.id)}
-                >
-                  <span className="roster-number">{rotationPosition ?? "-"}</span>
-                  <span className="roster-fields">
-                    <input
-                      aria-label={`${player.name} name`}
-                      value={player.name}
-                      onChange={(event) => updatePlayer(player.id, { name: event.target.value })}
-                    />
-                    <select
-                      aria-label={`${player.name} role`}
-                      value={role}
-                      onChange={(event) => updatePlayer(player.id, { roles: [event.target.value as PlayerRole] })}
-                    >
-                      {editableRoles.map((option) => (
-                        <option key={option} value={option}>
-                          {roleNames[option]}
-                        </option>
-                      ))}
-                    </select>
-                  </span>
-                  <em>{rotationPosition ? `P${rotationPosition}` : "Bench"}</em>
                 </div>
-              );
-            })}
-        </aside>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-[#cbd5c8] bg-[#fbfaf5] p-4 shadow-[0_20px_50px_rgba(24,48,43,0.08)] sm:p-6">
+            <div className="rounded-[22px] border border-[#d6ddd1] bg-[#eef3eb] p-5">
+              <div className="flex items-center justify-between gap-4 border-b border-[#d6ddd1] pb-4">
+                <div>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#648078]">
+                    Match overview
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-[#18302b]">Rotation plan</h2>
+                </div>
+                <div className="rounded-full border border-[#cbd5c8] bg-[#f8f7f2] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#456158]">
+                  Set 3
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4">
+                <div className="rounded-2xl border border-[#cbd5c8] bg-[#fbfaf5] p-4">
+                  <div className="flex items-center justify-between text-sm text-[#456158]">
+                    <span>Current sequence</span>
+                    <span className="font-semibold text-[#18302b]">2-1-5</span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs font-semibold uppercase tracking-[0.12em] text-[#648078]">
+                    {"234".split("").map((item) => (
+                      <div key={item} className="rounded-xl border border-[#d6ddd1] bg-[#eef3eb] p-3 text-[#18302b]">
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl bg-[#18302b] p-4 text-[#f9f7f2]">
+                    <p className="text-[10px] uppercase tracking-[0.14em] text-[#a9c0ba]">Efficiency</p>
+                    <div className="mt-2 flex items-end gap-2">
+                      <span className="text-3xl font-semibold">87%</span>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-[#d6ddd1] bg-[#f8f7f2] p-4">
+                    <p className="text-[10px] uppercase tracking-[0.14em] text-[#648078]">Focus</p>
+                    <div className="mt-2 flex items-center gap-2 text-xl font-semibold text-[#18302b]">
+                      <BarChart3 className="h-5 w-5 text-[#18a999]" />
+                      Tempo control
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-[#d6ddd1] bg-[#f8f7f2] p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#648078]">Key notes</p>
+                    </div>
+                    <CheckCircle2 className="h-5 w-5 text-[#18a999]" />
+                  </div>
+                  <ul className="mt-3 space-y-2 text-sm text-[#456158]">
+                    <li>• Libero remains in the serving pattern for all late rotations.</li>
+                    <li>• Right-side hitter should attack on the second tempo.</li>
+                    <li>• Block coverage is stable if the setter delays the set by one beat.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
-    </div>
+
+      <section className="mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8 lg:px-10">
+        <div className="grid gap-5 md:grid-cols-3">
+          {featureCards.map(({ icon: Icon, title, description }) => (
+            <article
+              key={title}
+              className="rounded-[24px] border border-[#d6ddd1] bg-[#fbfaf5] p-6 shadow-[0_14px_35px_rgba(24,48,43,0.04)]"
+            >
+              <div className="mb-4 inline-flex rounded-full bg-[#e8eee4] p-3 text-[#18302b]">
+                <Icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-xl font-semibold text-[#18302b]">{title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[#456158]">{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }

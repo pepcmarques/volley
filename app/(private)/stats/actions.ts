@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 const sessionCookie = "stats-session";
-const backendUrl = process.env.BACKEND_URL ?? "http://localhost:4444";
+const backendUrl = process.env.BACKEND_URL;
 
 type LoginResponse = {
   access_token?: unknown;

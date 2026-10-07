@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { authenticateStats, getStatsSessionToken } from "./actions";
 import StatsDashboard, { type StatRow } from "./dashboard";
 
-const backendUrl = process.env.BACKEND_URL ?? "http://localhost:4444";
+const backendUrl = process.env.BACKEND_URL;
 
 export const dynamic = "force-dynamic";
 

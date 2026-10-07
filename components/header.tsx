@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navigation = [
-  { href: "/", label: "Rotation planner" },
+  { href: "/rotation", label: "Rotation planner" },
   { href: "/stats", label: "Team stats" },
 ];
 
