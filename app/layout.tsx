@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Header from "@/components/header";
+import { isStatsAuthenticated } from "@/app/(private)/stats/actions";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,11 +19,15 @@ export const metadata: Metadata = {
   description: "Explore volleyball rotations, phases, and player movement.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const isLoggedIn = await isStatsAuthenticated();
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <Header />
+        <Header isLoggedIn={isLoggedIn} />
         <main className="flex-1">{children}</main>
       </body>
     </html>

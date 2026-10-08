@@ -135,8 +135,7 @@ export default function StatsDashboard({ initialRows }: { initialRows: StatRow[]
     <div className="planner-page">
       <div className="mb-5 flex flex-col gap-5 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current data source</p>
-          <p className="mt-1 text-sm font-medium">data/volleyball-stats.csv</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current data</p>
           <p className="mt-1 text-xs text-slate-500">{rows.length} records loaded</p>
         </div>
         <div className="grid w-full grid-cols-1 gap-3 sm:min-w-90 sm:grid-cols-3 sm:items-end sm:w-auto">
@@ -405,8 +404,7 @@ export default function StatsDashboard({ initialRows }: { initialRows: StatRow[]
       <footer className="mt-8 flex items-start gap-2 text-xs leading-relaxed text-slate-500">
         <Target className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Data is read from the structured sample file{" "}
-          <code className="rounded bg-slate-100 px-1 py-0.5">data/volleyball-stats.csv</code>.
+          Developed by Paulo Marques.
         </p>
       </footer>
     </div>

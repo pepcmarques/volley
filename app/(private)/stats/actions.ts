@@ -28,13 +28,15 @@ function isLoginResponse(body: unknown): body is LoginResponse {
 
 function clearSessionCookies(cookieStore: Awaited<ReturnType<typeof cookies>>) {
   for (const path of ["/", "/stats"]) {
-    cookieStore.delete(sessionCookie);
     cookieStore.set({
       name: sessionCookie,
       value: "",
       expires: new Date(0),
       maxAge: 0,
       path,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     });
   }
 }
@@ -56,9 +58,7 @@ export async function getStatsSessionToken() {
 }
 
 export async function authenticateStats(formData: FormData) {
-  const selectedRoles = formData
-    .getAll("role")
-    .filter((value): value is string => typeof value === "string");
+  const selectedRoles = formData.getAll("role").filter((value): value is string => typeof value === "string");
   const role = selectedRoles.length === 1 ? selectedRoles[0] : "";
   const suppliedPassword = String(formData.get("password") ?? "");
 

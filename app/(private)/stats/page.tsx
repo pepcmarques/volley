@@ -25,7 +25,8 @@ function getNumber(row: Record<string, unknown>, ...keys: string[]) {
 }
 
 function getRows(body: unknown): Record<string, unknown>[] | null {
-  if (Array.isArray(body)) return body.filter((row): row is Record<string, unknown> => typeof row === "object" && row !== null);
+  if (Array.isArray(body))
+    return body.filter((row): row is Record<string, unknown> => typeof row === "object" && row !== null);
   if (typeof body !== "object" || body === null) return null;
 
   const response = body as { data?: unknown; stats?: unknown };
@@ -68,7 +69,6 @@ async function readStatsRows(token: string): Promise<StatRow[] | null> {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
-
   } catch {
     return null;
   }
@@ -100,77 +100,78 @@ export default async function StatsPage({ searchParams }: PageProps<"/stats">) {
 
   if (!token || error === "session-expired") {
     return (
-      <div className="planner-page">
-        <form action={authenticateStats} className="w-full mx-auto max-w-sm rounded-xl border border-slate-200 p-6 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-blue-700">Volleyball analytics</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">Private statistics</h1>
-          <p className="mt-2 text-sm text-slate-600">Enter the password to view the team statistics.</p>
+      <div className="flex min-h-screen items-center justify-center bg-[#f4f1e9] px-5 py-12">
+        <form
+          action={authenticateStats}
+          className="w-full max-w-md rounded-[28px] border border-[#cbd5c8] bg-[#fbfaf5] p-6 shadow-[0_20px_50px_rgba(24,48,43,0.08)] sm:p-7"
+        >
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#648078]">Volleyball analytics</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.05em] text-[#18302b]">Private statistics</h1>
+          <p className="mt-2 text-sm leading-6 text-[#456158]">Enter the password to view the team statistics.</p>
+
           {error === "invalid-password" && (
-            <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <p className="mt-4 rounded-xl border border-[#f1b7a5] bg-[#fff4f0] p-3 text-sm text-[#7a4132]" role="alert">
               The role or password is incorrect.
             </p>
           )}
           {error === "invalid-input" && (
-            <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <p className="mt-4 rounded-xl border border-[#f1b7a5] bg-[#fff4f0] p-3 text-sm text-[#7a4132]" role="alert">
               Choose a role and enter your password.
             </p>
           )}
           {error === "session-expired" && (
-            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800" role="alert">
+            <p className="mt-4 rounded-xl border border-[#e7d7a9] bg-[#fbf6e9] p-3 text-sm text-[#6b5a2d]" role="alert">
               Your session expired. Please log in again.
             </p>
           )}
           {error === "backend-unavailable" && (
-            <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <p className="mt-4 rounded-xl border border-[#f1b7a5] bg-[#fff4f0] p-3 text-sm text-[#7a4132]" role="alert">
               The login service is unavailable. Please try again.
             </p>
           )}
           {error === "backend-error" && (
-            <p className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <p className="mt-4 rounded-xl border border-[#f1b7a5] bg-[#fff4f0] p-3 text-sm text-[#7a4132]" role="alert">
               The login service returned an unexpected response. Please try again.
             </p>
           )}
           {error === "logout-failed" && (
-            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800" role="alert">
+            <p className="mt-4 rounded-xl border border-[#e7d7a9] bg-[#fbf6e9] p-3 text-sm text-[#6b5a2d]" role="alert">
               You were signed out of this browser, but the login service could not confirm the logout.
             </p>
           )}
-          <fieldset className="mt-5">
-            <legend className="block text-sm font-medium text-slate-700">Access type</legend>
+
+          <fieldset className="mt-6">
+            <legend className="block text-sm font-medium text-[#456158]">Access type</legend>
             <div className="mt-2 grid grid-cols-2 gap-3">
               {[
                 { id: "staff", label: "Staff" },
                 { id: "player", label: "Player" },
               ].map((option) => (
                 <label
-                  className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 transition has-checked:border-blue-600 has-checked:bg-blue-50 has-checked:text-blue-700"
+                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#cbd5c8] bg-[#f8f7f2] px-3 py-2.5 text-sm text-[#18302b] transition has-checked:border-[#18302b] has-checked:bg-[#eef3eb]"
                   key={option.id}
                 >
-                  <input
-                    className="h-4 w-4 accent-blue-600"
-                    name="role"
-                    type="radio"
-                    value={option.id}
-                    required
-                  />
+                  <input className="h-4 w-4 accent-[#18302b]" name="role" type="radio" value={option.id} required />
                   {option.label}
                 </label>
               ))}
             </div>
           </fieldset>
-          <label className="mt-5 block text-sm font-medium text-slate-700" htmlFor="password">
+
+          <label className="mt-5 block text-sm font-medium text-[#456158]" htmlFor="password">
             Password
           </label>
           <input
-            className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+            className="mt-1.5 w-full rounded-xl border border-[#cbd5c8] bg-[#fffdf8] px-3 py-2.5 text-[#18302b] outline-none transition focus:border-[#18302b] focus:ring-2 focus:ring-[#dfe9e3]"
             id="password"
             name="password"
             type="password"
             required
             autoFocus
           />
+
           <button
-            className="mt-5 w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="mt-6 w-full rounded-full bg-[#18302b] px-4 py-3 text-sm font-semibold text-[#f9f7f2] transition hover:bg-[#24413d]"
             type="submit"
           >
             Unlock statistics
@@ -185,7 +186,10 @@ export default async function StatsPage({ searchParams }: PageProps<"/stats">) {
   if (!rows) {
     return (
       <div className="planner-page">
-        <p className="mx-auto max-w-xl rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+        <p
+          className="mx-auto max-w-xl rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          role="alert"
+        >
           The statistics service returned an invalid or unavailable response. Please log in again and try again.
         </p>
       </div>
