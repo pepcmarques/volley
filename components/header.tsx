@@ -39,7 +39,7 @@ export default function Header({ isLoggedIn }: HeaderProps) {
             </Link>
           </div>
 
-          <div className="flex items-center justify-center">
+          <div className="ml-auto flex items-center justify-center md:ml-0">
             <nav
               aria-label="Primary navigation"
               className="hidden items-center gap-1 overflow-x-auto text-sm text-[#456158] md:flex"
@@ -67,19 +67,17 @@ export default function Header({ isLoggedIn }: HeaderProps) {
             </button>
           </div>
 
-          <div className="flex items-center justify-end">
-            <div className="hidden md:block">
-              {isLoggedIn ? (
-                <form action={logoutStats}>
-                  <button
-                    className="inline-flex items-center justify-center rounded-full border border-[#cbd5c8] bg-[#18302b] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f9f7f2] transition hover:bg-[#24413d]"
-                    type="submit"
-                  >
-                    Logout
-                  </button>
-                </form>
-              ) : null}
-            </div>
+          <div className="hidden items-center justify-end md:flex">
+            {isLoggedIn ? (
+              <form action={logoutStats}>
+                <button
+                  className="inline-flex items-center justify-center rounded-full border border-[#cbd5c8] bg-[#18302b] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f9f7f2] transition hover:bg-[#24413d]"
+                  type="submit"
+                >
+                  Logout
+                </button>
+              </form>
+            ) : null}
           </div>
         </div>
 
