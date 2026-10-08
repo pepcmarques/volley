@@ -47,6 +47,8 @@ export default function LandingPage() {
                   width={300}
                   height={140}
                   className="rounded-full object-cover"
+                  loading="eager"
+                  style={{ width: "auto", height: "auto" }}
                 />
               </div>
             </div>

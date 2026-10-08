@@ -21,10 +21,10 @@ export default function Header({ isLoggedIn }: HeaderProps) {
   return (
     <header className="w-full border-b border-[#cbd5c8] bg-[#fbfaf5]">
       <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-4 py-4 md:grid-cols-3">
-          <div className="flex items-center justify-start">
+        <div className="flex items-center justify-between gap-4 py-3 md:grid md:grid-cols-3 md:py-4">
+          <div className="flex min-w-0 items-center justify-start">
             <Link
-              className="flex shrink-0 items-center gap-3 text-sm font-extrabold uppercase tracking-[0.16em] text-[#18302b]"
+              className="flex min-w-0 shrink items-center gap-3 text-sm font-extrabold uppercase tracking-[0.16em] text-[#18302b]"
               href="/"
             >
               <Image
@@ -35,7 +35,7 @@ export default function Header({ isLoggedIn }: HeaderProps) {
                 src="/CoachPaulo.jpeg"
                 width={40}
               />
-              <span>Coach Paulo</span>
+              <span className="truncate">Coach Paulo</span>
             </Link>
           </div>
 
@@ -68,16 +68,18 @@ export default function Header({ isLoggedIn }: HeaderProps) {
           </div>
 
           <div className="flex items-center justify-end">
-            {isLoggedIn ? (
-              <form action={logoutStats}>
-                <button
-                  className="inline-flex items-center justify-center rounded-full border border-[#cbd5c8] bg-[#18302b] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f9f7f2] transition hover:bg-[#24413d]"
-                  type="submit"
-                >
-                  Logout
-                </button>
-              </form>
-            ) : null}
+            <div className="hidden md:block">
+              {isLoggedIn ? (
+                <form action={logoutStats}>
+                  <button
+                    className="inline-flex items-center justify-center rounded-full border border-[#cbd5c8] bg-[#18302b] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f9f7f2] transition hover:bg-[#24413d]"
+                    type="submit"
+                  >
+                    Logout
+                  </button>
+                </form>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -97,6 +99,16 @@ export default function Header({ isLoggedIn }: HeaderProps) {
                 {item.label}
               </Link>
             ))}
+            {isLoggedIn ? (
+              <form action={logoutStats} className="border-t border-[#d6ddd1] pt-2">
+                <button
+                  className="block w-full px-3 py-3 text-left text-sm font-semibold text-[#456158] transition hover:bg-[#e8eee4] hover:text-[#18302b]"
+                  type="submit"
+                >
+                  Logout
+                </button>
+              </form>
+            ) : null}
           </nav>
         )}
       </div>
